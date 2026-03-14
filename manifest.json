@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.3",
   "name": "nashville-charts",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "display_name": "Nashville Charts",
   "description": "Interactive Nashville Number System chord charts for musicians",
   "long_description": "An MCP App that renders interactive Nashville Number System (NNS) chord charts inside Claude Desktop. NNS is the music notation system used by professional session musicians in Nashville — chords are written as scale degree numbers (1, 4, 5, 6-) instead of letter names, making charts instantly transposable to any key. Features include color-coded chord rendering, key transposition with capo calculation, medley compatibility analysis, and set list management.",
@@ -27,13 +27,12 @@
   "icon": "icon.png",
   "server": {
     "type": "node",
-    "entry_point": "server/server.ts",
+    "entry_point": "dist/index.js",
     "mcp_config": {
       "command": "node",
       "args": [
-        "--experimental-strip-types",
-        "--experimental-transform-types",
-        "${__dirname}/server/server.ts"
+        "${__dirname}/dist/index.js",
+        "--stdio"
       ],
       "env": {
         "CHARTS_ROOT": "${HOME}/my-charts"

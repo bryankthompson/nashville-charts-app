@@ -1,6 +1,6 @@
 {
   "name": "nashville-charts-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP App for rendering interactive Nashville Number System chord charts in Claude Desktop",
   "type": "module",
   "main": "dist/server.js",
