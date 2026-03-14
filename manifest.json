@@ -1,0 +1,145 @@
+{
+  "manifest_version": "0.3",
+  "name": "nashville-charts",
+  "version": "0.1.0",
+  "display_name": "Nashville Charts",
+  "description": "Interactive Nashville Number System chord charts for musicians",
+  "long_description": "An MCP App that renders interactive Nashville Number System (NNS) chord charts inside Claude Desktop. NNS is the music notation system used by professional session musicians in Nashville — chords are written as scale degree numbers (1, 4, 5, 6-) instead of letter names, making charts instantly transposable to any key. Features include color-coded chord rendering, key transposition with capo calculation, medley compatibility analysis, and set list management.",
+  "author": {
+    "name": "Bryan Thompson"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/bryankthompson/nashville-charts-app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bryankthompson/nashville-charts-app"
+  },
+  "keywords": [
+    "mcp",
+    "music",
+    "charts",
+    "nashville-number-system",
+    "chord-charts",
+    "transposition",
+    "guitar",
+    "live-performance"
+  ],
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server/server.ts",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "--experimental-strip-types",
+        "--experimental-transform-types",
+        "${__dirname}/server/server.ts"
+      ],
+      "env": {
+        "CHARTS_ROOT": "${HOME}/my-charts"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "view-chart",
+      "description": "Render an interactive Nashville Number System chart in the chat",
+      "annotations": {
+        "title": "View Chart",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "browse-charts",
+      "description": "Browse all charts with filtering by key, artist, or title",
+      "annotations": {
+        "title": "Browse Charts",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "transpose-chart",
+      "description": "Show a chart transposed to a new key with updated chord map and capo recommendation",
+      "annotations": {
+        "title": "Transpose Chart",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list-charts",
+      "description": "List all available Nashville Number System charts with metadata",
+      "annotations": {
+        "title": "List Charts",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get-chart",
+      "description": "Parse a chart file and return structured JSON",
+      "annotations": {
+        "title": "Get Chart Data",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "transpose",
+      "description": "Compute transposition data: new chord map and capo position",
+      "annotations": {
+        "title": "Transpose Key",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "manage-setlist",
+      "description": "Visual set list management. Shows all charts organized into set and pool.",
+      "annotations": {
+        "title": "Manage Set List",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "move-song",
+      "description": "Move a chart file between set/ and song_pool/ directories",
+      "annotations": {
+        "title": "Move Song",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "analyze-medleys",
+      "description": "Analyze songs for medley compatibility. Scores key, tempo, and time signature.",
+      "annotations": {
+        "title": "Analyze Medleys",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "score-medley",
+      "description": "Score two specific songs for medley compatibility",
+      "annotations": {
+        "title": "Score Medley Pair",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    }
+  ]
+}

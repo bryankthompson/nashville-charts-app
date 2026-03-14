@@ -1,0 +1,734 @@
+/* Nashville Charts - Core Styles */
+
+/* ========== Reset & Base ========== */
+.ncs-app {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--text-color, #1a1a2e);
+  background: var(--bg-color, #ffffff);
+  line-height: 1.5;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.ncs-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: var(--text-secondary, #666);
+}
+
+/* ========== Chord Colors ========== */
+/* These are the NNS color codes - critical for live performance readability */
+.chord-1 { color: #b8860b; font-weight: 700; }           /* Gold - Root/Tonic */
+.chord-2 { color: #8b4513; }                               /* Brown - Supertonic */
+.chord-3 { color: #6a0dad; }                               /* Purple - Mediant */
+.chord-4 { color: #0066cc; font-weight: 700; }            /* Blue - Subdominant */
+.chord-5 { color: #228b22; font-weight: 700; }            /* Green - Dominant */
+.chord-6 { color: #9932cc; font-weight: 700; }            /* Dark Orchid - Submediant */
+.chord-7 { color: #cc3333; }                               /* Red - Leading Tone */
+.chord-non-diatonic { color: #e60000; font-weight: 700; } /* Bright Red - Non-diatonic */
+
+/* ========== Chart Viewer ========== */
+.chart-viewer {
+  padding-bottom: 24px;
+}
+
+.chart-header-sticky {
+  position: sticky;
+  top: 0;
+  background: var(--bg-color, #ffffff);
+  z-index: 10;
+  padding: 12px 0 8px;
+  border-bottom: 2px solid var(--border-color, #e0e0e0);
+  margin-bottom: 16px;
+}
+
+.chart-title-block {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.chart-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.chart-artist {
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: var(--text-secondary, #555);
+  margin: 2px 0 0;
+}
+
+.medley-badge {
+  display: inline-block;
+  background: #9932cc;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+/* Metadata grid */
+.chart-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.meta-item {
+  display: flex;
+  gap: 4px;
+}
+
+.meta-label {
+  font-weight: 600;
+  color: var(--text-secondary, #555);
+}
+
+.meta-value {
+  font-weight: 500;
+}
+
+.meta-original {
+  font-size: 0.8em;
+  color: var(--text-secondary, #888);
+}
+
+/* ========== Chord Map ========== */
+.chord-map {
+  background: var(--surface-color, #f8f8fc);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 0.85rem;
+}
+
+.chord-map-header {
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.transpose-badge {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #888);
+  margin-left: 8px;
+}
+
+.chord-map-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.chord-map-entry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chord-number {
+  font-weight: 700;
+  min-width: 20px;
+}
+
+.chord-equals {
+  color: var(--text-secondary, #999);
+}
+
+.chord-name {
+  font-weight: 600;
+}
+
+.chord-note {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #888);
+  font-style: italic;
+}
+
+/* ========== Song Map ========== */
+.song-map {
+  margin: 12px 0;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 0.82rem;
+}
+
+.song-map-header {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+.song-map-entry {
+  display: flex;
+  gap: 8px;
+}
+
+.song-map-section {
+  font-weight: 600;
+  min-width: 100px;
+  text-align: right;
+  color: var(--text-secondary, #555);
+}
+
+.song-map-progression {
+  color: var(--text-color, #333);
+}
+
+/* ========== Sections ========== */
+.section-controls {
+  margin: 8px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-toggle-all {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  background: var(--surface-color, #f0f0f5);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary, #555);
+}
+
+.btn-toggle-all:hover {
+  background: var(--border-color, #e0e0e0);
+}
+
+.chart-sections {
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 0.88rem;
+}
+
+.section-block {
+  margin-bottom: 12px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+  font-weight: 700;
+  color: var(--text-color, #1a1a2e);
+}
+
+.section-header:hover {
+  color: var(--accent-color, #0066cc);
+}
+
+.section-toggle {
+  font-size: 0.7rem;
+  width: 14px;
+}
+
+.section-label {
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.section-repeat {
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #888);
+  font-style: italic;
+}
+
+.section-body {
+  padding-left: 20px;
+  margin-top: 4px;
+}
+
+.repeat-marker {
+  color: var(--text-secondary, #888);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* Chord and lyric lines — monospace alignment is critical */
+.measure-pair {
+  margin-bottom: 2px;
+}
+
+.chord-line {
+  white-space: pre;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.chord-token {
+  /* Colors applied by chord-N classes */
+}
+
+.lyric-line {
+  white-space: pre;
+  color: var(--text-color, #333);
+  font-weight: 400;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+/* ========== Notes ========== */
+.chart-notes {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 2px solid var(--border-color, #e0e0e0);
+  font-size: 0.82rem;
+}
+
+.notes-header {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.notes-list {
+  list-style: disc;
+  padding-left: 20px;
+  color: var(--text-secondary, #555);
+}
+
+.notes-list li {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+/* ========== Chart Browser ========== */
+.chart-browser {
+  padding: 8px 0 24px;
+}
+
+.browser-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.browser-header h1 {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.chart-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #888);
+}
+
+.browser-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  font-size: 0.88rem;
+  background: var(--bg-color, #fff);
+  color: var(--text-color, #333);
+}
+
+.key-select, .sort-select {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: var(--bg-color, #fff);
+  color: var(--text-color, #333);
+}
+
+.chart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chart-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--surface-color, #f8f8fc);
+  border: 1px solid var(--border-color, #e8e8ee);
+  border-radius: 6px;
+}
+
+.card-key {
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: 40px;
+  text-align: center;
+  color: #0066cc;
+}
+
+.card-info {
+  flex: 1;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.card-artist {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #888);
+}
+
+.card-path {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #aaa);
+  font-family: monospace;
+}
+
+.no-results {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-secondary, #888);
+}
+
+/* ========== Transpose Controls ========== */
+.transpose-controls {
+  margin: 12px 0;
+  padding: 8px 12px;
+  background: var(--surface-color, #f8f8fc);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 6px;
+}
+
+.transpose-header {
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.key-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.key-btn {
+  padding: 3px 8px;
+  font-size: 0.8rem;
+  font-family: "SF Mono", monospace;
+  font-weight: 600;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 3px;
+  background: var(--bg-color, #fff);
+  color: var(--text-color, #333);
+  cursor: pointer;
+}
+
+.key-btn:hover {
+  background: var(--border-color, #e0e0e0);
+}
+
+.key-btn.active {
+  background: #0066cc;
+  color: white;
+  border-color: #0066cc;
+}
+
+.key-btn.original {
+  border-color: #b8860b;
+}
+
+.capo-recommendation {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #555);
+}
+
+/* ========== Medley Analyzer ========== */
+.medley-analyzer {
+  padding: 8px 0 24px;
+}
+
+.analyzer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.analyzer-header h1 {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.pair-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pair-card {
+  padding: 12px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.pair-card.score-excellent { border-left-color: #228b22; }
+.pair-card.score-good { border-left-color: #0066cc; }
+.pair-card.score-fair { border-left-color: #b8860b; }
+.pair-card.score-poor { border-left-color: #cc3333; }
+
+.pair-songs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.song-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.pair-divider {
+  color: var(--text-secondary, #888);
+  font-weight: 300;
+}
+
+.pair-total {
+  font-size: 1.4rem;
+  font-weight: 700;
+  float: right;
+  margin-top: -28px;
+}
+
+.total-max {
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #888);
+}
+
+.pair-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.score-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-bar-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  width: 40px;
+  text-align: right;
+  color: var(--text-secondary, #666);
+}
+
+.score-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--surface-color, #f0f0f5);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.score-bar-fill.score-excellent { background: #228b22; }
+.score-bar-fill.score-good { background: #0066cc; }
+.score-bar-fill.score-fair { background: #b8860b; }
+.score-bar-fill.score-poor { background: #cc3333; }
+
+.score-bar-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: 24px;
+  color: var(--text-secondary, #666);
+}
+
+.pair-notes {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #666);
+}
+
+.note-item {
+  padding: 1px 0;
+}
+
+/* ========== Set List Manager ========== */
+.setlist-manager {
+  padding: 8px 0 24px;
+}
+
+.setlist-manager h1 {
+  font-size: 1.3rem;
+  margin: 0 0 16px;
+}
+
+.setlist-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.setlist-column {
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--surface-color, #f8f8fc);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.column-header h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.column-count {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #888);
+}
+
+.column-body {
+  padding: 8px;
+  min-height: 100px;
+}
+
+.empty-column {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-secondary, #aaa);
+  font-size: 0.85rem;
+}
+
+.setlist-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+}
+
+.setlist-row:hover {
+  background: var(--surface-color, #f0f0f5);
+}
+
+.row-key {
+  font-family: "SF Mono", monospace;
+  font-weight: 700;
+  font-size: 0.82rem;
+  min-width: 36px;
+  text-align: center;
+  color: #0066cc;
+}
+
+.row-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  flex: 1;
+}
+
+.row-artist {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #888);
+}
+
+/* ========== Print Styles ========== */
+@media print {
+  .ncs-app {
+    max-width: none;
+    padding: 0;
+    font-size: 11pt;
+  }
+
+  .chart-header-sticky {
+    position: static;
+    border-bottom: 2px solid #000;
+  }
+
+  .section-controls,
+  .transpose-controls,
+  .browser-controls {
+    display: none;
+  }
+
+  .section-header {
+    cursor: default;
+  }
+
+  .section-toggle {
+    display: none;
+  }
+
+  .section-body {
+    display: block !important;
+  }
+
+  .chord-1 { color: #000; font-weight: 800; }
+  .chord-4 { color: #000; font-weight: 700; }
+  .chord-5 { color: #000; font-weight: 700; }
+  .chord-6 { color: #000; font-weight: 600; }
+  .chord-non-diatonic { color: #000; font-weight: 800; text-decoration: underline; }
+}
+
+/* ========== Dark Mode ========== */
+@media (prefers-color-scheme: dark) {
+  .ncs-app {
+    --text-color: #e0e0e8;
+    --text-secondary: #999;
+    --bg-color: #1a1a2e;
+    --surface-color: #252540;
+    --border-color: #3a3a55;
+    --accent-color: #4d9fff;
+  }
+
+  .chord-1 { color: #ffd700; }
+  .chord-2 { color: #d2a679; }
+  .chord-3 { color: #bf7fff; }
+  .chord-4 { color: #4d9fff; }
+  .chord-5 { color: #66dd66; }
+  .chord-6 { color: #cc77ff; }
+  .chord-7 { color: #ff6666; }
+  .chord-non-diatonic { color: #ff4444; }
+}

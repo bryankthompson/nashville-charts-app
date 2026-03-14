@@ -1,0 +1,54 @@
+{
+  "name": "nashville-charts-app",
+  "version": "0.1.0",
+  "description": "MCP App for rendering interactive Nashville Number System chord charts in Claude Desktop",
+  "type": "module",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "bin": {
+    "nashville-charts": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "examples"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "cross-env INPUT=mcp-app.html vite build && npx esbuild server/server.ts --bundle --platform=node --format=esm --outfile=dist/server.js --packages=external && npx esbuild main.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external --external:./server.js --banner:js='#!/usr/bin/env node'",
+    "serve": "node dist/index.js",
+    "serve:stdio": "node dist/index.js --stdio",
+    "start": "npm run build && npm run serve",
+    "start:stdio": "npm run build 1>&2 && npm run serve:stdio",
+    "dev": "node --experimental-strip-types --experimental-transform-types main.ts",
+    "dev:stdio": "node --experimental-strip-types --experimental-transform-types main.ts --stdio",
+    "test": "node --experimental-strip-types --experimental-transform-types test-runner.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-singlefile": "^2.0.3"
+  }
+}
