@@ -77,7 +77,7 @@ function parseChordMapLine(line: string): ChordMapEntry[] {
     const number = match[1];
     const chord = match[2];
     let quality = "major";
-    if (number.endsWith("-") || chord.endsWith("m") && !chord.endsWith("dim")) {
+    if (number.endsWith("-") || (chord.endsWith("m") && !chord.endsWith("dim"))) {
       quality = "minor";
     } else if (number.endsWith("°") || chord.includes("dim")) {
       quality = "dim";
@@ -118,7 +118,6 @@ export function parseChart(content: string): ParsedChart {
   let currentSection: ChartSection | null = null;
   let inChordMap = false;
   let inSongMap = false;
-  let inNotes = false;
   let separatorCount = 0;
   let pendingChordLine: string | null = null;
 
@@ -259,7 +258,6 @@ export function parseChart(content: string): ParsedChart {
             currentSection = null;
           }
           state = "NOTES";
-          inNotes = true;
           continue;
         }
 

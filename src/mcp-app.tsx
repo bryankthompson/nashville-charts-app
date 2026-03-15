@@ -7,7 +7,7 @@
 import type { App } from "@modelcontextprotocol/ext-apps";
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { StrictMode, useCallback, useEffect, useState } from "react";
+import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { ChartViewer } from "./components/ChartViewer";
 import { ChartBrowser } from "./components/ChartBrowser";
@@ -44,7 +44,7 @@ function NashvilleChartsApp() {
   const [view, setView] = useState<ViewAction | null>(null);
 
   const { app, error } = useApp({
-    appInfo: { name: "Nashville Charts", version: "0.1.0" },
+    appInfo: { name: "Nashville Charts", version: "0.1.1" },
     capabilities: {},
     onAppCreated: (app) => {
       app.onteardown = async () => {

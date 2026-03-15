@@ -14,6 +14,7 @@ import * as path from "path";
 import { parseChart, parseChartFilename } from "./parser.ts";
 import { transposeChart, getTranspositionOptions } from "./transposer.ts";
 import { scoreMedley, scoreAllPairs } from "./medley-scorer.ts";
+import { buildChordMap } from "../shared/music-theory.ts";
 import type { ParsedChart, ChartListEntry } from "../shared/chart-types.ts";
 
 // --- Configuration ---
@@ -146,7 +147,7 @@ function findChartByQuery(query: string): { chart: ParsedChart; filePath: string
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "nashville-charts",
-    version: "0.1.0",
+    version: "0.1.1",
   });
 
   // Shared app resource URI - all UI tools point to the same React app
@@ -404,7 +405,6 @@ export function createServer(): McpServer {
     },
     async ({ originalKey, newKey }): Promise<CallToolResult> => {
       const options = getTranspositionOptions(originalKey);
-      const { buildChordMap } = await import("../shared/music-theory.ts");
       const originalMap = buildChordMap(originalKey).map((e) => ({
         ...e,
         note: undefined,
@@ -612,7 +612,7 @@ export function createServer(): McpServer {
         fs.mkdirSync(destDir, { recursive: true });
       }
 
-      const destPath = path.join(destDir, filename);
+      const destPath = path.join(destDir, path.basename(filename));
 
       try {
         fs.renameSync(match, destPath);

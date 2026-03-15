@@ -505,8 +505,15 @@
 .pair-songs {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   margin-bottom: 8px;
+}
+
+.pair-songs-names {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .song-name {
@@ -522,8 +529,6 @@
 .pair-total {
   font-size: 1.4rem;
   font-weight: 700;
-  float: right;
-  margin-top: -28px;
 }
 
 .total-max {

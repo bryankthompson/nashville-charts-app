@@ -46,13 +46,15 @@ export function MedleyAnalyzer({ scores, chartCount }: Props) {
         {scores.map((score, i) => (
           <div key={i} className={`pair-card ${scoreColor(score.total, maxTotal)}`}>
             <div className="pair-songs">
-              <span className="song-name">{score.songA}</span>
-              <span className="pair-divider">+</span>
-              <span className="song-name">{score.songB}</span>
-            </div>
-            <div className="pair-total">
-              <span className="total-score">{score.total}</span>
-              <span className="total-max">/{maxTotal}</span>
+              <div className="pair-songs-names">
+                <span className="song-name">{score.songA}</span>
+                <span className="pair-divider">+</span>
+                <span className="song-name">{score.songB}</span>
+              </div>
+              <div className="pair-total">
+                <span className="total-score">{score.total}</span>
+                <span className="total-max">/{maxTotal}</span>
+              </div>
             </div>
             <div className="pair-breakdown">
               <ScoreBar value={score.keyScore} max={3} label="Key" />
