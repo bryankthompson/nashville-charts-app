@@ -219,6 +219,7 @@ export function createServer(): McpServer {
       const result = findChartByQuery(query);
       if (!result) {
         return {
+          isError: true,
           content: [
             {
               type: "text" as const,
@@ -261,6 +262,7 @@ export function createServer(): McpServer {
       const result = findChartByQuery(query);
       if (!result) {
         return {
+          isError: true,
           content: [
             {
               type: "text" as const,
@@ -357,6 +359,7 @@ export function createServer(): McpServer {
       const result = findChartByQuery(query);
       if (!result) {
         return {
+          isError: true,
           content: [
             {
               type: "text" as const,
@@ -459,6 +462,7 @@ export function createServer(): McpServer {
 
       if (charts.length < 2) {
         return {
+          isError: true,
           content: [
             {
               type: "text" as const,
@@ -507,6 +511,7 @@ export function createServer(): McpServer {
 
       if (!a || !b) {
         return {
+          isError: true,
           content: [
             {
               type: "text" as const,
@@ -593,6 +598,7 @@ export function createServer(): McpServer {
 
       if (!match) {
         return {
+          isError: true,
           content: [
             {
               type: "text" as const,
@@ -626,6 +632,7 @@ export function createServer(): McpServer {
         };
       } catch (err) {
         return {
+          isError: true,
           content: [
             {
               type: "text" as const,

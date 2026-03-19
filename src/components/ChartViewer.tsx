@@ -1,18 +1,45 @@
 import React, { useState } from "react";
+import type { App } from "@modelcontextprotocol/ext-apps";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ParsedChart, TransposeResult } from "../../shared/chart-types";
 import { ChordMap } from "./ChordMap";
 import { SongMap } from "./SongMap";
 import { SectionBlock } from "./SectionBlock";
 
+const MAJOR_KEYS = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab"];
+const MINOR_KEYS = ["Am", "Bbm", "Bm", "Cm", "C#m", "Dm", "Ebm", "Em", "Fm", "F#m", "Gm", "G#m"];
+
 interface Props {
+  app: App;
   chart: ParsedChart;
   transposition?: TransposeResult;
+  onToolResult: (result: CallToolResult) => void;
 }
 
-export function ChartViewer({ chart, transposition }: Props) {
+export function ChartViewer({ app, chart, transposition, onToolResult }: Props) {
   const [allExpanded, setAllExpanded] = useState(true);
+  const [transposing, setTransposing] = useState(false);
 
   const meta = chart.metadata;
+  const currentKey = transposition ? transposition.newKey : meta.key;
+  const isMinor = meta.key?.endsWith("m");
+  const keys = isMinor ? MINOR_KEYS : MAJOR_KEYS;
+
+  const handleTranspose = async (newKey: string) => {
+    if (newKey === currentKey) return;
+    setTransposing(true);
+    try {
+      const result = await app.callServerTool({
+        name: "transpose-chart",
+        arguments: { query: chart.title, newKey },
+      });
+      onToolResult(result);
+    } catch (err) {
+      console.error("Failed to transpose:", err);
+    } finally {
+      setTransposing(false);
+    }
+  };
 
   return (
     <div className="chart-viewer">
@@ -82,6 +109,33 @@ export function ChartViewer({ chart, transposition }: Props) {
           transposition={transposition}
         />
       </div>
+
+      {/* Transpose Controls */}
+      {meta.key && (
+        <div className="transpose-controls">
+          <div className="transpose-header">
+            Transpose{transposing && " ..."}
+          </div>
+          <div className="key-selector">
+            {keys.map((k) => (
+              <button
+                key={k}
+                className={`key-btn${k === currentKey ? " active" : ""}${k === meta.key ? " original" : ""}`}
+                onClick={() => handleTranspose(k)}
+                disabled={transposing}
+              >
+                {k}
+              </button>
+            ))}
+          </div>
+          {transposition?.capoFret != null && (
+            <div className="capo-recommendation">
+              Capo fret {transposition.capoFret}
+              {transposition.shapesKey && ` (play ${transposition.shapesKey} shapes)`}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Song Map */}
       {chart.songMap.length > 0 && <SongMap songMap={chart.songMap} />}

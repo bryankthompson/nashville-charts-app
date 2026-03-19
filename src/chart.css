@@ -2,9 +2,9 @@
 
 /* ========== Reset & Base ========== */
 .ncs-app {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: var(--text-color, #1a1a2e);
-  background: var(--bg-color, #ffffff);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  color: var(--color-text-primary, var(--text-color, #1a1a2e));
+  background: var(--color-background-primary, var(--bg-color, #ffffff));
   line-height: 1.5;
   max-width: 800px;
   margin: 0 auto;
@@ -406,6 +406,28 @@
   font-family: monospace;
 }
 
+.chart-card-clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.chart-card-clickable:hover {
+  border-color: var(--accent-color, #0066cc);
+  background: var(--bg-color, #fff);
+}
+
+.chart-card-loading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.card-action {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent-color, #0066cc);
+  white-space: nowrap;
+}
+
 .no-results {
   text-align: center;
   padding: 24px;
@@ -679,6 +701,29 @@
   color: var(--text-secondary, #888);
 }
 
+.btn-move {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: var(--surface-color, #f0f0f5);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--accent-color, #0066cc);
+  white-space: nowrap;
+}
+
+.btn-move:hover:not(:disabled) {
+  background: var(--accent-color, #0066cc);
+  color: white;
+  border-color: var(--accent-color, #0066cc);
+}
+
+.btn-move:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
 /* ========== Print Styles ========== */
 @media print {
   .ncs-app {
@@ -718,8 +763,28 @@
 }
 
 /* ========== Dark Mode ========== */
+/* Host theme via [data-theme] attribute (set by useHostStyles on :root) */
+[data-theme="dark"] .ncs-app {
+  --text-color: #e0e0e8;
+  --text-secondary: #999;
+  --bg-color: #1a1a2e;
+  --surface-color: #252540;
+  --border-color: #3a3a55;
+  --accent-color: #4d9fff;
+}
+
+[data-theme="dark"] .chord-1 { color: #ffd700; }
+[data-theme="dark"] .chord-2 { color: #d2a679; }
+[data-theme="dark"] .chord-3 { color: #bf7fff; }
+[data-theme="dark"] .chord-4 { color: #4d9fff; }
+[data-theme="dark"] .chord-5 { color: #66dd66; }
+[data-theme="dark"] .chord-6 { color: #cc77ff; }
+[data-theme="dark"] .chord-7 { color: #ff6666; }
+[data-theme="dark"] .chord-non-diatonic { color: #ff4444; }
+
+/* Fallback: OS-level dark mode when no host theme is provided */
 @media (prefers-color-scheme: dark) {
-  .ncs-app {
+  .ncs-app:not([data-theme]) {
     --text-color: #e0e0e8;
     --text-secondary: #999;
     --bg-color: #1a1a2e;
@@ -728,12 +793,12 @@
     --accent-color: #4d9fff;
   }
 
-  .chord-1 { color: #ffd700; }
-  .chord-2 { color: #d2a679; }
-  .chord-3 { color: #bf7fff; }
-  .chord-4 { color: #4d9fff; }
-  .chord-5 { color: #66dd66; }
-  .chord-6 { color: #cc77ff; }
-  .chord-7 { color: #ff6666; }
-  .chord-non-diatonic { color: #ff4444; }
+  :root:not([data-theme]) .chord-1 { color: #ffd700; }
+  :root:not([data-theme]) .chord-2 { color: #d2a679; }
+  :root:not([data-theme]) .chord-3 { color: #bf7fff; }
+  :root:not([data-theme]) .chord-4 { color: #4d9fff; }
+  :root:not([data-theme]) .chord-5 { color: #66dd66; }
+  :root:not([data-theme]) .chord-6 { color: #cc77ff; }
+  :root:not([data-theme]) .chord-7 { color: #ff6666; }
+  :root:not([data-theme]) .chord-non-diatonic { color: #ff4444; }
 }
