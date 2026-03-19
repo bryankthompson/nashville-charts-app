@@ -76,9 +76,9 @@ function NashvilleChartsApp() {
       };
 
       // Enhancement 2: track host context changes
-      app.onhostcontextchanged = (ctx) => {
+      app.onhostcontextchanged = () => {
         if (tornDown.current) return;
-        setHostContext(ctx);
+        setHostContext(app.getHostContext());
       };
 
       app.onerror = console.error;
