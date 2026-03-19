@@ -11,10 +11,11 @@ import type { CallToolResult, ReadResourceResult } from "@modelcontextprotocol/s
 import { z } from "zod";
 import * as fs from "fs";
 import * as path from "path";
-import { parseChart, parseChartFilename } from "./parser.ts";
+import { parseChart, parseChartFilename, validateChart, generateChartFilename } from "./parser.ts";
+import { generateChartTemplate } from "./chart-template.ts";
 import { transposeChart, getTranspositionOptions } from "./transposer.ts";
 import { scoreMedley, scoreAllPairs } from "./medley-scorer.ts";
-import { buildChordMap } from "../shared/music-theory.ts";
+import { buildChordMap, normalizeKey } from "../shared/music-theory.ts";
 import type { ParsedChart, ChartListEntry } from "../shared/chart-types.ts";
 
 // --- Configuration ---
@@ -637,6 +638,192 @@ export function createServer(): McpServer {
             {
               type: "text" as const,
               text: `Error moving file: ${err}`,
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  // --- Tool: create-chart (data only — returns template text) ---
+  server.registerTool(
+    "create-chart",
+    {
+      title: "Create Chart Template",
+      description:
+        "Generate a pre-filled NNS chart template with chord map. Returns chart text that can be edited and saved via save-chart.",
+      inputSchema: {
+        title: z.string().describe("Song title"),
+        artist: z.string().describe("Artist or composer name"),
+        key: z.string().describe("Musical key (e.g., 'G', 'Am', 'Bb', 'F#m')"),
+        tempo: z.string().optional().describe("Tempo (e.g., '~120 BPM')"),
+        time: z.string().optional().describe("Time signature (e.g., '4/4', '3/4')"),
+        feel: z.string().optional().describe("Musical feel (e.g., 'Country shuffle, mid-tempo')"),
+        tuning: z.string().optional().describe("Guitar tuning (e.g., 'Standard', 'Half-step down')"),
+        capo: z.string().optional().describe("Capo position (e.g., '2nd fret', 'No capo')"),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+    },
+    async ({ title, artist, key, tempo, time, feel, tuning, capo }): Promise<CallToolResult> => {
+      try {
+        const template = generateChartTemplate({
+          title,
+          artist,
+          key,
+          tempo,
+          time,
+          feel,
+          tuning,
+          capo,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: template,
+            },
+          ],
+        };
+      } catch (err) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `Error generating template: ${err}`,
+            },
+          ],
+        };
+      }
+    },
+  );
+
+  // --- Tool: save-chart (writes to disk) ---
+  server.registerTool(
+    "save-chart",
+    {
+      title: "Save Chart",
+      description:
+        "Validate and save an NNS chart to the charts directory. Auto-generates filename from metadata. Returns the saved path.",
+      inputSchema: {
+        content: z.string().describe("Full chart file content in NNS .md format"),
+        folder: z
+          .enum(["set", "song_pool", "root"])
+          .default("song_pool")
+          .describe("Target folder: 'set' (active setlist), 'song_pool' (available songs), or 'root' (charts root)"),
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+    },
+    async ({ content, folder }): Promise<CallToolResult> => {
+      // Validate the chart content
+      const validation = validateChart(content);
+      if (!validation.valid) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `Chart validation failed:\n${validation.errors.map((e) => `  - ${e}`).join("\n")}`,
+            },
+          ],
+        };
+      }
+
+      const chart = validation.chart;
+
+      // Extract key for filename
+      const displayKey = normalizeKey(chart.metadata.key ?? "");
+      if (!displayKey) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `Cannot determine key from metadata: "${chart.metadata.key}"`,
+            },
+          ],
+        };
+      }
+
+      // Generate filename
+      const filename = generateChartFilename(displayKey, chart.artist, chart.title);
+      if (!filename) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `Cannot generate filename from key="${displayKey}", artist="${chart.artist}", title="${chart.title}"`,
+            },
+          ],
+        };
+      }
+
+      // Determine target directory
+      let targetDir = CHARTS_ROOT;
+      if (folder === "set") {
+        targetDir = path.join(CHARTS_ROOT, "set");
+      } else if (folder === "song_pool") {
+        targetDir = path.join(CHARTS_ROOT, "song_pool");
+      }
+
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+
+      const filePath = path.join(targetDir, filename);
+
+      // Check if file already exists
+      if (fs.existsSync(filePath)) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `File already exists: ${path.relative(CHARTS_ROOT, filePath)}. Use a different title/artist or remove the existing file first.`,
+            },
+          ],
+        };
+      }
+
+      // Write the file
+      try {
+        fs.writeFileSync(filePath, content, "utf-8");
+        const relativePath = path.relative(CHARTS_ROOT, filePath);
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({
+                saved: true,
+                filename,
+                path: relativePath,
+                folder,
+                title: chart.title,
+                artist: chart.artist,
+                key: displayKey,
+                sections: chart.sections.length,
+                chords: chart.chordMap.length,
+              }, null, 2),
+            },
+          ],
+        };
+      } catch (err) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text: `Error writing file: ${err}`,
             },
           ],
         };
