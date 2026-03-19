@@ -28,18 +28,15 @@ export function generateChartTemplate(input: ChartTemplateInput): string {
     throw new Error(`Invalid key: "${input.key}"`);
   }
 
-  // Verify the key produces a valid chord map
-  const testMap = buildChordMap(normalizedKey);
-  if (testMap.length === 0) {
+  // Build chord map from music theory engine (also validates the key)
+  const chordMap = buildChordMap(normalizedKey);
+  if (chordMap.length === 0) {
     throw new Error(`Invalid key: "${input.key}" (no chord map could be built)`);
   }
 
   const isMinor = normalizedKey.endsWith("m");
   const displayKey = `${normalizedKey}${isMinor ? "" : " major"}`;
   const keyLabel = isMinor ? normalizedKey.slice(0, -1) : normalizedKey;
-
-  // Build chord map from music theory engine
-  const chordMap = buildChordMap(normalizedKey);
 
   // Calculate capo if not specified
   let capoStr = input.capo ?? "No capo";
