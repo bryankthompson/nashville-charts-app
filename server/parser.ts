@@ -69,9 +69,9 @@ function isChordLine(line: string): boolean {
  * Parse a chord map section line into entries.
  * e.g. "  1 = A    2- = Bm    3- = C#m    4 = D"
  */
-function parseChordMapLine(line: string): ChordMapEntry[] {
+export function parseChordMapLine(line: string): ChordMapEntry[] {
   const entries: ChordMapEntry[] = [];
-  const regex = /([1-7♭♯#b][°\-+]?)\s*=\s*(\S+)/g;
+  const regex = /([♭♯#b]?[1-7][°\-+]?)\s*=\s*(\S+)/g;
   let match;
   while ((match = regex.exec(line)) !== null) {
     const number = match[1];
@@ -129,6 +129,10 @@ export function parseChart(content: string): ParsedChart {
     if (SEPARATOR.test(trimmed)) {
       separatorCount++;
 
+      // Separators always end chord map / song map regions
+      inChordMap = false;
+      inSongMap = false;
+
       // Flush any pending section
       if (currentSection) {
         flushPendingChord(currentSection, pendingChordLine);
@@ -158,8 +162,6 @@ export function parseChart(content: string): ParsedChart {
         const nextNonEmpty = findNextNonEmpty(lines, i + 1);
         if (nextNonEmpty && NOTES_HEADER.test(nextNonEmpty.trim())) {
           state = "NOTES";
-          inChordMap = false;
-          inSongMap = false;
         }
         continue;
       }
@@ -179,7 +181,8 @@ export function parseChart(content: string): ParsedChart {
         // Don't flush, just continue
       }
       inChordMap = false;
-      inSongMap = false;
+      // Don't reset inSongMap on empty lines — song maps can span blank lines.
+      // inSongMap resets when a different header (CHORD MAP, section label, separator) is found.
       continue;
     }
 
@@ -229,19 +232,32 @@ export function parseChart(content: string): ParsedChart {
         }
 
         if (inSongMap) {
-          const mapMatch = trimmed.match(SONG_MAP_LINE);
-          if (mapMatch) {
-            result.songMap.push({
-              section: mapMatch[1].trim(),
-              progression: mapMatch[2].trim(),
-            });
+          // Section labels end the song map region
+          if (SECTION_LABEL.test(trimmed)) {
+            inSongMap = false;
+            // Fall through to the section label check below
+          } else {
+            const mapMatch = trimmed.match(SONG_MAP_LINE);
+            if (mapMatch) {
+              result.songMap.push({
+                section: mapMatch[1].trim(),
+                progression: mapMatch[2].trim(),
+              });
+            } else {
+              // Flow format (no colon): "Intro/Verse → Interlude → Verse → ..."
+              result.songMap.push({
+                section: "Flow",
+                progression: trimmed,
+              });
+            }
+            continue;
           }
-          continue;
         }
 
         // Check if this is a section label — transition to SECTIONS state
         if (SECTION_LABEL.test(trimmed)) {
           state = "SECTIONS";
+          inSongMap = false;
           // Fall through to SECTIONS handling below
         } else {
           continue;
@@ -284,6 +300,13 @@ export function parseChart(content: string): ParsedChart {
         if (/^\s*\(same\s+(chord\s+)?pattern/i.test(trimmed)) {
           currentSection.isRepeat = true;
           currentSection.repeatNote = trimmed.replace(/^\s*\(/, "").replace(/\)\s*$/, "");
+          continue;
+        }
+
+        // Detect parenthetical annotations like "(Fingerpicked arpeggios...)"
+        if (/^\(.*\)$/.test(trimmed)) {
+          if (!currentSection.annotations) currentSection.annotations = [];
+          currentSection.annotations.push(trimmed);
           continue;
         }
 

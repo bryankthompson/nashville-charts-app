@@ -5,7 +5,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { parseChart, parseChartFilename, validateChart, encodeFilenameKey, generateChartFilename } from "./server/parser.ts";
+import { parseChart, parseChartFilename, parseChordMapLine, validateChart, encodeFilenameKey, generateChartFilename } from "./server/parser.ts";
 import { generateChartTemplate } from "./server/chart-template.ts";
 import { transposeChart, getTranspositionOptions } from "./server/transposer.ts";
 import {
@@ -163,6 +163,129 @@ for (const file of exampleFiles) {
   assert(!!chart.metadata.key, `${file}: has key`);
   assert(chart.sections.length > 0, `${file}: has sections`);
 }
+
+// ===== Parser Bug Fix Tests =====
+console.log("\n=== Parser Bug Fixes ===");
+
+// Inline test fixture exercising flats, flow song map, and annotations
+const minorKeyChart = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TEST MINOR KEY CHART
+  Test Artist
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Key:     Am
+  Time:    4/4
+  Tempo:   ~72 BPM
+  Feel:    Rock ballad
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CHORD MAP (Key of Am)
+  1- = Am       2° = Bdim     ♭3 = C        4- = Dm
+  5- = Em       5 = E         ♭6 = F        ♭7 = G
+
+SONG MAP
+  Intro → Verse → Bridge → Outro
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[INTRO]
+(Fingerpicked arpeggios, descending bass line)
+| 1-      | ♭3      | ♭6      | ♭7      |
+
+[VERSE]
+(Strumming begins)
+| ♭3      | 4-      | ♭6      | 1-      |
+
+[BRIDGE]
+(Full band, driving feel)
+| ♭3      | ♭7      | 1-      |         |
+
+[OUTRO]
+(same chord pattern as Intro)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOTES:
+  - Test chart for parser bug fixes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+const stChart = parseChart(minorKeyChart);
+
+assertEqual(stChart.title, "TEST MINOR KEY CHART", "minor key chart title");
+assertEqual(stChart.metadata.key, "Am", "minor key chart key");
+
+// Bug 1: Flat accidentals preserved in chord map numbers
+const flat3 = stChart.chordMap.find((e) => e.number === "♭3");
+assert(flat3 !== undefined, "chord map has ♭3");
+assertEqual(flat3?.chord, "C", "chord map ♭3 = C");
+
+const flat6 = stChart.chordMap.find((e) => e.number === "♭6");
+assert(flat6 !== undefined, "chord map has ♭6");
+assertEqual(flat6?.chord, "F", "chord map ♭6 = F");
+
+const flat7 = stChart.chordMap.find((e) => e.number === "♭7");
+assert(flat7 !== undefined, "chord map has ♭7");
+assertEqual(flat7?.chord, "G", "chord map ♭7 = G");
+
+const dim2 = stChart.chordMap.find((e) => e.number === "2°");
+assert(dim2 !== undefined, "chord map has 2°");
+assertEqual(dim2?.chord, "Bdim", "chord map 2° = Bdim");
+
+// Bug 1: Plain numbers still work alongside flats
+const one = stChart.chordMap.find((e) => e.number === "1-");
+assert(one !== undefined, "chord map has 1-");
+assertEqual(one?.chord, "Am", "chord map 1- = Am");
+
+// Bug 1: Inline regex unit test
+const testEntries = parseChordMapLine("  ♭3 = C    ♭6 = F    ♭7 = G    5 = E");
+assertEqual(testEntries.length, 4, "parseChordMapLine flat entries: 4 entries");
+assertEqual(testEntries[0]?.number, "♭3", "parseChordMapLine: ♭3 preserved");
+assertEqual(testEntries[1]?.number, "♭6", "parseChordMapLine: ♭6 preserved");
+assertEqual(testEntries[2]?.number, "♭7", "parseChordMapLine: ♭7 preserved");
+assertEqual(testEntries[3]?.number, "5", "parseChordMapLine: plain 5 still works");
+
+// Bug 2: Song map parsed (flow format, no colon)
+assert(stChart.songMap.length > 0, "song map has entries (flow format)");
+assertEqual(stChart.songMap[0]?.section, "Flow", "song map: flow format section");
+assert(
+  stChart.songMap[0]?.progression.includes("→"),
+  "song map: flow has arrow separators"
+);
+
+// Bug 3: Section annotations stored separately from measures
+const introSection = stChart.sections.find((s) => s.label === "INTRO");
+assert(introSection !== undefined, "has INTRO section");
+assert(
+  (introSection?.annotations?.length ?? 0) > 0,
+  "INTRO has annotations"
+);
+assert(
+  introSection?.annotations?.[0]?.includes("Fingerpicked") ?? false,
+  "INTRO annotation contains 'Fingerpicked'"
+);
+// Annotations should NOT appear as measure lyrics
+const introLyrics = introSection?.measures.map((m) => m.lyrics).join(" ") ?? "";
+assert(
+  !introLyrics.includes("Fingerpicked"),
+  "'Fingerpicked' not in measure lyrics"
+);
+
+// Bug 3: Verse section also has annotation
+const verseSection = stChart.sections.find((s) => s.label === "VERSE");
+assert(
+  (verseSection?.annotations?.length ?? 0) > 0,
+  "VERSE has annotations"
+);
+assert(
+  verseSection?.annotations?.[0]?.includes("Strumming") ?? false,
+  "VERSE annotation contains 'Strumming'"
+);
+
+// Bug 3: Repeat marker still works alongside annotations
+const outroSection = stChart.sections.find((s) => s.label === "OUTRO");
+assert(outroSection?.isRepeat === true, "OUTRO is a repeat section");
+assert(
+  (outroSection?.annotations?.length ?? 0) === 0,
+  "OUTRO repeat marker not stored as annotation"
+);
 
 // ===== Filename Parser Tests =====
 console.log("\n=== Filename Parser ===");
