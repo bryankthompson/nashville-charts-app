@@ -4,3 +4,5 @@ dist/
 .DS_Store
 CLAUDE.md
 PROJECT_STATUS.md
+examples/song_pool/
+examples/set/

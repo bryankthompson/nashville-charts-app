@@ -164,41 +164,75 @@ for (const file of exampleFiles) {
   assert(chart.sections.length > 0, `${file}: has sections`);
 }
 
-// ===== Parser Bug Fix Tests (Stairway to Heaven) =====
+// ===== Parser Bug Fix Tests =====
 console.log("\n=== Parser Bug Fixes ===");
 
-const SONG_POOL_DIR = path.resolve(import.meta.dirname, "examples/song_pool");
-const stairway = fs.readFileSync(
-  path.join(SONG_POOL_DIR, "key_am-led_zeppelin-stairway_to_heaven.md"),
-  "utf-8"
-);
-const stChart = parseChart(stairway);
+// Inline test fixture exercising flats, flow song map, and annotations
+const minorKeyChart = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TEST MINOR KEY CHART
+  Test Artist
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Key:     Am
+  Time:    4/4
+  Tempo:   ~72 BPM
+  Feel:    Rock ballad
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-assertEqual(stChart.title, "STAIRWAY TO HEAVEN", "Stairway title");
-assertEqual(stChart.artist, "Led Zeppelin", "Stairway artist");
-assertEqual(stChart.metadata.key, "Am", "Stairway key");
+CHORD MAP (Key of Am)
+  1- = Am       2° = Bdim     ♭3 = C        4- = Dm
+  5- = Em       5 = E         ♭6 = F        ♭7 = G
+
+SONG MAP
+  Intro → Verse → Bridge → Outro
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[INTRO]
+(Fingerpicked arpeggios, descending bass line)
+| 1-      | ♭3      | ♭6      | ♭7      |
+
+[VERSE]
+(Strumming begins)
+| ♭3      | 4-      | ♭6      | 1-      |
+
+[BRIDGE]
+(Full band, driving feel)
+| ♭3      | ♭7      | 1-      |         |
+
+[OUTRO]
+(same chord pattern as Intro)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOTES:
+  - Test chart for parser bug fixes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+const stChart = parseChart(minorKeyChart);
+
+assertEqual(stChart.title, "TEST MINOR KEY CHART", "minor key chart title");
+assertEqual(stChart.metadata.key, "Am", "minor key chart key");
 
 // Bug 1: Flat accidentals preserved in chord map numbers
 const flat3 = stChart.chordMap.find((e) => e.number === "♭3");
-assert(flat3 !== undefined, "Stairway chord map has ♭3");
-assertEqual(flat3?.chord, "C", "Stairway chord map ♭3 = C");
+assert(flat3 !== undefined, "chord map has ♭3");
+assertEqual(flat3?.chord, "C", "chord map ♭3 = C");
 
 const flat6 = stChart.chordMap.find((e) => e.number === "♭6");
-assert(flat6 !== undefined, "Stairway chord map has ♭6");
-assertEqual(flat6?.chord, "F", "Stairway chord map ♭6 = F");
+assert(flat6 !== undefined, "chord map has ♭6");
+assertEqual(flat6?.chord, "F", "chord map ♭6 = F");
 
 const flat7 = stChart.chordMap.find((e) => e.number === "♭7");
-assert(flat7 !== undefined, "Stairway chord map has ♭7");
-assertEqual(flat7?.chord, "G", "Stairway chord map ♭7 = G");
+assert(flat7 !== undefined, "chord map has ♭7");
+assertEqual(flat7?.chord, "G", "chord map ♭7 = G");
 
 const dim2 = stChart.chordMap.find((e) => e.number === "2°");
-assert(dim2 !== undefined, "Stairway chord map has 2°");
-assertEqual(dim2?.chord, "Bdim", "Stairway chord map 2° = Bdim");
+assert(dim2 !== undefined, "chord map has 2°");
+assertEqual(dim2?.chord, "Bdim", "chord map 2° = Bdim");
 
-// Bug 1: Also verify that plain numbers still work alongside flats
+// Bug 1: Plain numbers still work alongside flats
 const one = stChart.chordMap.find((e) => e.number === "1-");
-assert(one !== undefined, "Stairway chord map has 1-");
-assertEqual(one?.chord, "Am", "Stairway chord map 1- = Am");
+assert(one !== undefined, "chord map has 1-");
+assertEqual(one?.chord, "Am", "chord map 1- = Am");
 
 // Bug 1: Inline regex unit test
 const testEntries = parseChordMapLine("  ♭3 = C    ♭6 = F    ♭7 = G    5 = E");
@@ -209,40 +243,48 @@ assertEqual(testEntries[2]?.number, "♭7", "parseChordMapLine: ♭7 preserved")
 assertEqual(testEntries[3]?.number, "5", "parseChordMapLine: plain 5 still works");
 
 // Bug 2: Song map parsed (flow format, no colon)
-assert(stChart.songMap.length > 0, "Stairway has song map entries");
-assertEqual(stChart.songMap[0]?.section, "Flow", "Stairway song map: flow format section");
+assert(stChart.songMap.length > 0, "song map has entries (flow format)");
+assertEqual(stChart.songMap[0]?.section, "Flow", "song map: flow format section");
 assert(
   stChart.songMap[0]?.progression.includes("→"),
-  "Stairway song map: flow has arrow separators"
+  "song map: flow has arrow separators"
 );
 
 // Bug 3: Section annotations stored separately from measures
-const introSection = stChart.sections.find((s) => s.label === "INTRO / VERSE");
-assert(introSection !== undefined, "Stairway has INTRO / VERSE section");
+const introSection = stChart.sections.find((s) => s.label === "INTRO");
+assert(introSection !== undefined, "has INTRO section");
 assert(
   (introSection?.annotations?.length ?? 0) > 0,
-  "Stairway INTRO / VERSE has annotations"
+  "INTRO has annotations"
 );
 assert(
   introSection?.annotations?.[0]?.includes("Fingerpicked") ?? false,
-  "Stairway annotation contains 'Fingerpicked'"
+  "INTRO annotation contains 'Fingerpicked'"
 );
 // Annotations should NOT appear as measure lyrics
 const introLyrics = introSection?.measures.map((m) => m.lyrics).join(" ") ?? "";
 assert(
   !introLyrics.includes("Fingerpicked"),
-  "Stairway 'Fingerpicked' not in measure lyrics"
+  "'Fingerpicked' not in measure lyrics"
 );
 
-// Bug 3: Bridge section also has annotation
-const bridgeSection = stChart.sections.find((s) => s.label === "BRIDGE");
+// Bug 3: Verse section also has annotation
+const verseSection = stChart.sections.find((s) => s.label === "VERSE");
 assert(
-  (bridgeSection?.annotations?.length ?? 0) > 0,
-  "Stairway BRIDGE has annotations"
+  (verseSection?.annotations?.length ?? 0) > 0,
+  "VERSE has annotations"
 );
 assert(
-  bridgeSection?.annotations?.[0]?.includes("Strumming") ?? false,
-  "Stairway BRIDGE annotation contains 'Strumming'"
+  verseSection?.annotations?.[0]?.includes("Strumming") ?? false,
+  "VERSE annotation contains 'Strumming'"
+);
+
+// Bug 3: Repeat marker still works alongside annotations
+const outroSection = stChart.sections.find((s) => s.label === "OUTRO");
+assert(outroSection?.isRepeat === true, "OUTRO is a repeat section");
+assert(
+  (outroSection?.annotations?.length ?? 0) === 0,
+  "OUTRO repeat marker not stored as annotation"
 );
 
 // ===== Filename Parser Tests =====

@@ -296,23 +296,17 @@ export function parseChart(content: string): ParsedChart {
 
         if (!currentSection) continue;
 
-        // Detect parenthetical annotations like "(Fingerpicked arpeggios...)"
-        if (/^\(.*\)$/.test(trimmed)) {
-          // Check for repeat marker first — it's also parenthetical
-          if (/^\(same\s+(chord\s+)?pattern/i.test(trimmed)) {
-            currentSection.isRepeat = true;
-            currentSection.repeatNote = trimmed.replace(/^\(/, "").replace(/\)$/, "");
-            continue;
-          }
-          if (!currentSection.annotations) currentSection.annotations = [];
-          currentSection.annotations.push(trimmed);
-          continue;
-        }
-
-        // Check for repeat marker (non-parenthetical form)
+        // Check for repeat marker
         if (/^\s*\(same\s+(chord\s+)?pattern/i.test(trimmed)) {
           currentSection.isRepeat = true;
           currentSection.repeatNote = trimmed.replace(/^\s*\(/, "").replace(/\)\s*$/, "");
+          continue;
+        }
+
+        // Detect parenthetical annotations like "(Fingerpicked arpeggios...)"
+        if (/^\(.*\)$/.test(trimmed)) {
+          if (!currentSection.annotations) currentSection.annotations = [];
+          currentSection.annotations.push(trimmed);
           continue;
         }
 
