@@ -1,15 +1,20 @@
 import React, { useState, useMemo } from "react";
+import type { App } from "@modelcontextprotocol/ext-apps";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { ChartListEntry } from "../../shared/chart-types";
 
 interface Props {
+  app: App;
   charts: ChartListEntry[];
   totalCount: number;
+  onToolResult: (result: CallToolResult) => void;
 }
 
-export function ChartBrowser({ charts, totalCount }: Props) {
+export function ChartBrowser({ app, charts, totalCount, onToolResult }: Props) {
   const [search, setSearch] = useState("");
   const [keyFilter, setKeyFilter] = useState("");
   const [sortBy, setSortBy] = useState<"title" | "artist" | "key">("title");
+  const [loading, setLoading] = useState<string | null>(null);
 
   const uniqueKeys = useMemo(
     () => [...new Set(charts.map((c) => c.key))].sort(),
@@ -35,6 +40,21 @@ export function ChartBrowser({ charts, totalCount }: Props) {
       return aVal.localeCompare(bVal);
     });
   }, [charts, search, keyFilter, sortBy]);
+
+  const handleViewChart = async (chart: ChartListEntry) => {
+    setLoading(chart.filename);
+    try {
+      const result = await app.callServerTool({
+        name: "view-chart",
+        arguments: { query: chart.title },
+      });
+      onToolResult(result);
+    } catch (err) {
+      console.error("Failed to view chart:", err);
+    } finally {
+      setLoading(null);
+    }
+  };
 
   return (
     <div className="chart-browser">
@@ -78,13 +98,20 @@ export function ChartBrowser({ charts, totalCount }: Props) {
 
       <div className="chart-list">
         {filtered.map((chart, i) => (
-          <div key={i} className="chart-card">
+          <div
+            key={i}
+            className={`chart-card chart-card-clickable${loading === chart.filename ? " chart-card-loading" : ""}`}
+            onClick={() => !loading && handleViewChart(chart)}
+          >
             <div className="card-key">{chart.key}</div>
             <div className="card-info">
               <div className="card-title">{chart.title}</div>
               <div className="card-artist">{chart.artist}</div>
             </div>
             <div className="card-path">{chart.path}</div>
+            <div className="card-action">
+              {loading === chart.filename ? "Loading..." : "View"}
+            </div>
           </div>
         ))}
         {filtered.length === 0 && (

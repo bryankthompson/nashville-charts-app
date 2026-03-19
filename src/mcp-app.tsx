@@ -5,9 +5,9 @@
  * and render the appropriate view component.
  */
 import type { App } from "@modelcontextprotocol/ext-apps";
-import { useApp } from "@modelcontextprotocol/ext-apps/react";
+import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { StrictMode, useState } from "react";
+import { StrictMode, useCallback, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { ChartViewer } from "./components/ChartViewer";
 import { ChartBrowser } from "./components/ChartBrowser";
@@ -96,31 +96,40 @@ function NashvilleChartsApp() {
     );
   }
 
-  return <NashvilleChartsInner app={app} view={view} />;
+  return <NashvilleChartsInner app={app} view={view} setView={setView} />;
 }
 
 interface InnerProps {
   app: App;
   view: ViewAction;
+  setView: (view: ViewAction) => void;
 }
 
-function NashvilleChartsInner({ app, view }: InnerProps) {
+function NashvilleChartsInner({ app, view, setView }: InnerProps) {
+  // Apply host theme variables and fonts
+  useHostStyles(app, app.getHostContext());
+
+  const handleToolResult = useCallback((result: CallToolResult) => {
+    const action = extractViewAction(result);
+    if (action) setView(action);
+  }, []);
+
   return (
     <div className="ncs-app">
       {view.action === "view-chart" && (
-        <ChartViewer chart={view.chart} transposition={view.transposition} />
+        <ChartViewer app={app} chart={view.chart} transposition={view.transposition} onToolResult={handleToolResult} />
       )}
       {view.action === "transpose-chart" && (
-        <ChartViewer chart={view.chart} transposition={view.transposition} />
+        <ChartViewer app={app} chart={view.chart} transposition={view.transposition} onToolResult={handleToolResult} />
       )}
       {view.action === "browse-charts" && (
-        <ChartBrowser charts={view.charts} totalCount={view.totalCount} />
+        <ChartBrowser app={app} charts={view.charts} totalCount={view.totalCount} onToolResult={handleToolResult} />
       )}
       {view.action === "analyze-medleys" && (
         <MedleyAnalyzer scores={view.scores} chartCount={view.chartCount} />
       )}
       {view.action === "manage-setlist" && (
-        <SetListManager setCharts={view.set} poolCharts={view.pool} />
+        <SetListManager app={app} setCharts={view.set} poolCharts={view.pool} onToolResult={handleToolResult} />
       )}
     </div>
   );
