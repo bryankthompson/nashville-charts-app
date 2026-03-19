@@ -7,7 +7,7 @@
 
 import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CallToolResult, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult, GetPromptResult, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import * as fs from "fs";
 import * as path from "path";
@@ -148,7 +148,7 @@ function findChartByQuery(query: string): { chart: ParsedChart; filePath: string
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "nashville-charts",
-    version: "0.2.0",
+    version: "0.2.1",
   });
 
   // Shared app resource URI - all UI tools point to the same React app
@@ -830,6 +830,118 @@ export function createServer(): McpServer {
         };
       }
     },
+  );
+
+  // --- Prompt Templates ---
+
+  server.registerPrompt(
+    "new-chart",
+    {
+      title: "Create a Chart",
+      description: "Create a Nashville Number System chart for a song",
+      argsSchema: {
+        song: z.string().describe("Song name (and optionally artist), e.g. 'Wagon Wheel by Old Crow Medicine Show'"),
+      },
+    },
+    (args): GetPromptResult => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Create a Nashville Number System chart for "${args.song}". Use the create-chart tool to generate the chart content, then save-chart to write it to disk, and finally view-chart to display the result.`,
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    "transpose-song",
+    {
+      title: "Transpose a Song",
+      description: "Transpose a chart to a different key",
+      argsSchema: {
+        song: z.string().describe("Song name or filename to transpose"),
+        key: z.string().describe("Target key, e.g. 'G', 'Bb', 'F#m'"),
+      },
+    },
+    (args): GetPromptResult => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Transpose "${args.song}" to the key of ${args.key}. Use the transpose-chart tool to perform the transposition and display the result.`,
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    "find-chart",
+    {
+      title: "Find a Chart",
+      description: "Search for a chart by song name, artist, or key",
+      argsSchema: {
+        query: z.string().describe("Search term — song name, artist, or key"),
+      },
+    },
+    (args): GetPromptResult => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Find a chart matching "${args.query}". Use view-chart to display it if you can identify the file, otherwise use browse-charts to search the library and let me pick.`,
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    "browse-library",
+    {
+      title: "Browse Chart Library",
+      description: "Browse all available charts with optional filtering",
+      argsSchema: {
+        filter: z.string().optional().describe("Optional filter — key, artist, or genre"),
+      },
+    },
+    (args): GetPromptResult => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: args.filter
+              ? `Browse my chart library filtered by "${args.filter}". Use browse-charts to show matching charts.`
+              : `Browse my entire chart library. Use browse-charts to show all available charts.`,
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    "plan-setlist",
+    {
+      title: "Plan a Setlist",
+      description: "Build and optimize a setlist from your chart library",
+    },
+    (): GetPromptResult => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: "Help me plan a setlist. Use manage-setlist to build the list from my chart library, analyze-medleys to check key/tempo compatibility between songs, and move-song to reorder for the best flow.",
+          },
+        },
+      ],
+    }),
   );
 
   return server;
