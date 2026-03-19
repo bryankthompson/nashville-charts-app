@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.3",
   "name": "nashville-charts",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "display_name": "Nashville Charts",
   "description": "Interactive Nashville Number System chord charts for musicians",
   "long_description": "An MCP App that renders interactive Nashville Number System (NNS) chord charts inside Claude Desktop. NNS is the music notation system used by professional session musicians in Nashville — chords are written as scale degree numbers (1, 4, 5, 6-) instead of letter names, making charts instantly transposable to any key. Features include color-coded chord rendering, key transposition with capo calculation, medley compatibility analysis, and set list management.",
@@ -136,6 +136,26 @@
       "annotations": {
         "title": "Score Medley Pair",
         "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "create-chart",
+      "description": "Generate a pre-filled NNS chart template with chord map. Returns chart text that can be edited and saved via save-chart.",
+      "annotations": {
+        "title": "Create Chart Template",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "save-chart",
+      "description": "Validate and save an NNS chart to the charts directory. Auto-generates filename from metadata.",
+      "annotations": {
+        "title": "Save Chart",
+        "readOnlyHint": false,
         "destructiveHint": false,
         "openWorldHint": false
       }

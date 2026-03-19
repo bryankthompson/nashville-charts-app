@@ -148,7 +148,7 @@ function findChartByQuery(query: string): { chart: ParsedChart; filePath: string
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "nashville-charts",
-    version: "0.1.1",
+    version: "0.2.0",
   });
 
   // Shared app resource URI - all UI tools point to the same React app
