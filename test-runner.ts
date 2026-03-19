@@ -5,7 +5,8 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { parseChart, parseChartFilename } from "./server/parser.ts";
+import { parseChart, parseChartFilename, validateChart, encodeFilenameKey, generateChartFilename } from "./server/parser.ts";
+import { generateChartTemplate } from "./server/chart-template.ts";
 import { transposeChart, getTranspositionOptions } from "./server/transposer.ts";
 import {
   normalizeKey,
@@ -214,6 +215,121 @@ assertEqual(minOptions.length, 12, "getTranspositionOptions Am: 12 options");
 
 const gOption = getTranspositionOptions("G").find((o) => o.key === "G");
 assertEqual(gOption?.semitones, 0, "getTranspositionOptions G: G has 0 semitones");
+
+// ===== Filename Encoder Tests =====
+console.log("\n=== Filename Encoder ===");
+
+assertEqual(encodeFilenameKey("G"), "g", "encodeFilenameKey G");
+assertEqual(encodeFilenameKey("F#m"), "fsm", "encodeFilenameKey F#m");
+assertEqual(encodeFilenameKey("Bb"), "bb", "encodeFilenameKey Bb");
+assertEqual(encodeFilenameKey("Am"), "am", "encodeFilenameKey Am");
+assertEqual(encodeFilenameKey("C#"), "cs", "encodeFilenameKey C#");
+assertEqual(encodeFilenameKey("Ebm"), "ebm", "encodeFilenameKey Ebm");
+assertEqual(encodeFilenameKey("X"), null, "encodeFilenameKey invalid");
+
+assertEqual(
+  generateChartFilename("G", "Traditional", "Amazing Grace"),
+  "key_g-traditional-amazing_grace.md",
+  "generateChartFilename simple"
+);
+assertEqual(
+  generateChartFilename("F#m", "3 Doors Down", "Loser"),
+  "key_fsm-3_doors_down-loser.md",
+  "generateChartFilename with number in artist"
+);
+assertEqual(
+  generateChartFilename("Bb", "Chris Stapleton", "Tennessee Whiskey"),
+  "key_bb-chris_stapleton-tennessee_whiskey.md",
+  "generateChartFilename flat key"
+);
+assertEqual(
+  generateChartFilename("X", "Artist", "Song"),
+  null,
+  "generateChartFilename invalid key"
+);
+
+// ===== Chart Template Tests =====
+console.log("\n=== Chart Template ===");
+
+const template = generateChartTemplate({
+  title: "Test Song",
+  artist: "Test Artist",
+  key: "G",
+  tempo: "~120 BPM",
+  time: "4/4",
+  feel: "Rock, driving",
+});
+assert(template.includes("TEST SONG"), "template has uppercase title");
+assert(template.includes("Test Artist"), "template has artist");
+assert(template.includes("Key:     G major"), "template has key");
+assert(template.includes("1 = G"), "template has chord map 1=G");
+assert(template.includes("4 = C"), "template has chord map 4=C");
+assert(template.includes("5 = D"), "template has chord map 5=D");
+assert(template.includes("[VERSE 1]"), "template has verse section");
+assert(template.includes("[CHORUS]"), "template has chorus section");
+assert(template.includes("NOTES:"), "template has notes section");
+
+const minorTemplate = generateChartTemplate({
+  title: "Minor Song",
+  artist: "Artist",
+  key: "Am",
+});
+assert(minorTemplate.includes("1- = Am"), "minor template has 1-=Am");
+assert(minorTemplate.includes("Key:     Am"), "minor template shows Am key");
+
+try {
+  generateChartTemplate({ title: "Bad", artist: "Bad", key: "X" });
+  assert(false, "template rejects invalid key");
+} catch {
+  assert(true, "template rejects invalid key");
+}
+
+// ===== Validate Chart Tests =====
+console.log("\n=== Validate Chart ===");
+
+const validResult = validateChart(amazingGrace);
+assert(validResult.valid === true, "validateChart accepts valid chart");
+
+const invalidEmpty = validateChart("");
+assert(invalidEmpty.valid === false, "validateChart rejects empty");
+if (!invalidEmpty.valid) {
+  assert(invalidEmpty.errors.length > 0, "validateChart empty has errors");
+}
+
+const invalidNoKey = validateChart(`━━━━━━
+  TITLE
+  ARTIST
+━━━━━━
+  Tuning: Standard
+━━━━━━
+[VERSE]
+1  4  5
+━━━━━━
+`);
+assert(invalidNoKey.valid === false, "validateChart rejects missing key");
+
+// Roundtrip: generate template -> fill in -> validate
+const filledTemplate = generateChartTemplate({
+  title: "Roundtrip Test",
+  artist: "Test Artist",
+  key: "D",
+  tempo: "~100 BPM",
+  time: "4/4",
+  feel: "Country",
+}).replace("[chords above lyrics here]", "1                    4\n  Test lyric line")
+  .replace("[fill in progression]", "1 - 4 - 5 - 1")
+  .replace("[sources, techniques, special notes]", "Test note");
+const roundtripResult = validateChart(filledTemplate);
+// Template sections have placeholder text, which the parser sees as content
+// The filled template should parse with a title and key at minimum
+if (roundtripResult.valid) {
+  assertEqual(roundtripResult.chart.title, "ROUNDTRIP TEST", "roundtrip title");
+  assertEqual(roundtripResult.chart.metadata.key, "D major", "roundtrip key");
+} else {
+  // If validation fails, that's also informative
+  console.log("  INFO: roundtrip validation errors:", roundtripResult.errors);
+  assert(false, "roundtrip template validates after filling");
+}
 
 // ===== Summary =====
 console.log("\n" + "=".repeat(50));

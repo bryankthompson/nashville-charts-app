@@ -411,3 +411,65 @@ const FILENAME_KEY_MAP: Record<string, string> = {
 function decodeFilenameKey(code: string): string | null {
   return FILENAME_KEY_MAP[code.toLowerCase()] ?? null;
 }
+
+/** Reverse mapping: display key to filename code */
+const KEY_TO_FILENAME: Record<string, string> = Object.fromEntries(
+  Object.entries(FILENAME_KEY_MAP).map(([code, display]) => [display, code])
+);
+
+/**
+ * Encode a display key into the filename key code.
+ * e.g., "F#m" -> "fsm", "Bb" -> "bb", "G" -> "g"
+ */
+export function encodeFilenameKey(displayKey: string): string | null {
+  return KEY_TO_FILENAME[displayKey] ?? null;
+}
+
+/**
+ * Generate a chart filename from metadata.
+ * e.g., key="G", artist="Chris Stapleton", song="Tennessee Whiskey"
+ *       -> "key_g-chris_stapleton-tennessee_whiskey.md"
+ */
+export function generateChartFilename(
+  key: string,
+  artist: string,
+  song: string
+): string | null {
+  const keyCode = encodeFilenameKey(key);
+  if (!keyCode) return null;
+
+  const sanitize = (s: string): string =>
+    s.toLowerCase().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
+
+  const artistSlug = sanitize(artist);
+  const songSlug = sanitize(song);
+  if (!artistSlug || !songSlug) return null;
+
+  return `key_${keyCode}-${artistSlug}-${songSlug}.md`;
+}
+
+/**
+ * Validate chart content by parsing and checking required fields.
+ * Returns { valid: true, chart } or { valid: false, errors }.
+ */
+export function validateChart(
+  content: string
+): { valid: true; chart: ParsedChart } | { valid: false; errors: string[] } {
+  const errors: string[] = [];
+
+  let chart: ParsedChart;
+  try {
+    chart = parseChart(content);
+  } catch (err) {
+    return { valid: false, errors: [`Parse error: ${err}`] };
+  }
+
+  if (!chart.title) errors.push("Missing title");
+  if (!chart.artist) errors.push("Missing artist");
+  if (!chart.metadata.key) errors.push("Missing key in metadata");
+  if (chart.chordMap.length === 0) errors.push("Empty chord map");
+  if (chart.sections.length === 0) errors.push("No sections found");
+
+  if (errors.length > 0) return { valid: false, errors };
+  return { valid: true, chart };
+}
