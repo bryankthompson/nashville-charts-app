@@ -14,8 +14,14 @@ export function SongMap({ songMap }: Props) {
       <div className="song-map-body">
         {songMap.map((entry, i) => (
           <div key={i} className="song-map-entry">
-            <span className="song-map-section">{entry.section}:</span>
-            <span className="song-map-progression">{entry.progression}</span>
+            {entry.section === "Flow" ? (
+              <span className="song-map-flow">{entry.progression}</span>
+            ) : (
+              <>
+                <span className="song-map-section">{entry.section}:</span>
+                <span className="song-map-progression">{entry.progression}</span>
+              </>
+            )}
           </div>
         ))}
       </div>

@@ -96,6 +96,13 @@ export function SectionBlock({ section, defaultExpanded = true }: Props) {
       </div>
       {expanded && (
         <div className="section-body">
+          {section.annotations && section.annotations.length > 0 && (
+            <div className="section-annotations">
+              {section.annotations.map((anno, i) => (
+                <div key={i} className="section-annotation">{anno}</div>
+              ))}
+            </div>
+          )}
           {section.isRepeat && section.measures.length === 0 ? (
             <div className="repeat-marker">({section.repeatNote ?? "same chord pattern"})</div>
           ) : (

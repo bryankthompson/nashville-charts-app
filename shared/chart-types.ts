@@ -35,6 +35,7 @@ export interface Measure {
 export interface ChartSection {
   label: string; // e.g. "VERSE 1", "CHORUS", "BRIDGE"
   measures: Measure[];
+  annotations?: string[]; // e.g. "(Fingerpicked arpeggios...)"
   isRepeat: boolean; // true if "(same chord pattern)" etc.
   repeatNote?: string; // e.g. "same chord pattern as Verse 1"
 }
