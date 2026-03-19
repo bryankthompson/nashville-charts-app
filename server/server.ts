@@ -575,7 +575,7 @@ export function createServer(): McpServer {
     },
   );
 
-  // --- Tool: move-song (data only) ---
+  // --- Tool: move-song (data only, app-visible only) ---
   server.registerTool(
     "move-song",
     {
@@ -592,6 +592,7 @@ export function createServer(): McpServer {
         destructiveHint: false,
         openWorldHint: false,
       },
+      _meta: { ui: { visibility: ["app"] } },
     },
     async ({ filename, destination }): Promise<CallToolResult> => {
       const files = findChartFiles(CHARTS_ROOT);

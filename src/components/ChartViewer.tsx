@@ -140,7 +140,7 @@ export function ChartViewer({ app, chart, transposition, onToolResult }: Props) 
       {/* Song Map */}
       {chart.songMap.length > 0 && <SongMap songMap={chart.songMap} />}
 
-      {/* Expand/Collapse All */}
+      {/* Expand/Collapse All + YouTube Search */}
       <div className="section-controls">
         <button
           className="btn-toggle-all"
@@ -148,6 +148,18 @@ export function ChartViewer({ app, chart, transposition, onToolResult }: Props) 
         >
           {allExpanded ? "Collapse All" : "Expand All"}
         </button>
+        {app.getHostCapabilities()?.openLinks && (
+          <button
+            className="btn-toggle-all btn-youtube-search"
+            onClick={async () => {
+              const q = encodeURIComponent(`${chart.title} ${chart.artist}`);
+              const { isError } = await app.openLink({ url: `https://www.youtube.com/results?search_query=${q}` });
+              if (isError) console.warn("Host denied openLink request");
+            }}
+          >
+            Search YouTube
+          </button>
+        )}
       </div>
 
       {/* Sections */}
