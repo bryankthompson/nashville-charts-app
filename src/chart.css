@@ -211,6 +211,17 @@
   background: var(--border-color, #e0e0e0);
 }
 
+.btn-youtube-search {
+  color: #cc0000;
+  border-color: #cc0000;
+}
+
+.btn-youtube-search:hover {
+  background: #cc0000;
+  color: white;
+  border-color: #cc0000;
+}
+
 .chart-sections {
   font-family: "SF Mono", "Fira Code", "Consolas", monospace;
   font-size: 0.88rem;
@@ -739,7 +750,8 @@
 
   .section-controls,
   .transpose-controls,
-  .browser-controls {
+  .browser-controls,
+  .btn-youtube-search {
     display: none;
   }
 
