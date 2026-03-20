@@ -71,11 +71,57 @@ export async function startStreamableHTTPServer(
 
 /**
  * Starts an MCP server with stdio transport.
+ * Includes debug logging to diagnose MCPB UI rendering issues.
  */
 export async function startStdioServer(
-  createServer: () => McpServer,
+  createServerFn: () => McpServer,
 ): Promise<void> {
-  await createServer().connect(new StdioServerTransport());
+  const server = createServerFn();
+  const transport = new StdioServerTransport();
+
+  // Debug: Set onmessage BEFORE connect — Protocol.connect() chains pre-existing
+  // callbacks, so this captures raw messages before SDK schema parsing strips fields.
+  // Critical: the SDK's InitializeRequestSchema uses z.core.$strip which removes
+  // unknown properties like "extensions" from capabilities. This captures them raw.
+  transport.onmessage = (msg: unknown) => {
+    const msgObj = msg as Record<string, unknown>;
+    if (msgObj?.method === "initialize") {
+      console.error(`[DEBUG:rx] ========== RAW INITIALIZE REQUEST ==========`);
+      console.error(`[DEBUG:rx] ${JSON.stringify(msg, null, 2).substring(0, 5000)}`);
+      console.error(`[DEBUG:rx] =============================================`);
+
+      // Specifically check for extensions in capabilities
+      const params = msgObj.params as Record<string, unknown> | undefined;
+      const caps = params?.capabilities as Record<string, unknown> | undefined;
+      if (caps?.extensions) {
+        console.error(`[DEBUG:rx] EXTENSIONS FOUND in capabilities: ${JSON.stringify(caps.extensions)}`);
+      } else {
+        console.error(`[DEBUG:rx] NO extensions field in capabilities`);
+      }
+
+      // Also check for extensions at params level (alternate location)
+      if (params?.extensions) {
+        console.error(`[DEBUG:rx] EXTENSIONS FOUND at params level: ${JSON.stringify(params.extensions)}`);
+      }
+    }
+  };
+
+  // Debug: Wrap transport.send to log outgoing initialize response
+  const origSend = transport.send.bind(transport);
+  transport.send = async (msg: unknown, opts?: unknown) => {
+    const msgObj = msg as Record<string, unknown>;
+    if (msgObj?.result && typeof msgObj.result === "object") {
+      const result = msgObj.result as Record<string, unknown>;
+      if (result.protocolVersion || result.serverInfo) {
+        console.error(`[DEBUG:tx] ========== INITIALIZE RESPONSE ==========`);
+        console.error(`[DEBUG:tx] ${JSON.stringify(result, null, 2).substring(0, 2000)}`);
+        console.error(`[DEBUG:tx] ==========================================`);
+      }
+    }
+    return origSend(msg as Parameters<typeof origSend>[0], opts as Parameters<typeof origSend>[1]);
+  };
+
+  await server.connect(transport);
 }
 
 async function main() {

@@ -5,7 +5,7 @@
  * No transport logic here - that lives in main.ts.
  */
 
-import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
+import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE, EXTENSION_ID } from "@modelcontextprotocol/ext-apps/server";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult, GetPromptResult, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
@@ -161,6 +161,8 @@ export function createServer(): McpServer {
     appResourceUri,
     { mimeType: RESOURCE_MIME_TYPE },
     async (): Promise<ReadResourceResult> => {
+      console.error(`[DEBUG:resource] resources/read called for: ${appResourceUri}`);
+      console.error(`[DEBUG:resource] Timestamp: ${new Date().toISOString()}`);
       const htmlPath = path.join(DIST_DIR, "mcp-app.html");
       let html: string;
       try {
@@ -943,6 +945,33 @@ export function createServer(): McpServer {
       ],
     }),
   );
+
+  // --- Debug: Log client capabilities on initialize ---
+  // NOTE: getClientCapabilities() returns SDK-parsed caps where unknown fields
+  // (like "extensions") may be stripped by Zod's $strip mode. Compare with the
+  // raw [DEBUG:rx] log from main.ts to see if extensions were present pre-parse.
+  server.server.oninitialized = () => {
+    const caps = server.server.getClientCapabilities();
+    const clientVersion = server.server.getClientVersion();
+    console.error(`[DEBUG:init] ========== INITIALIZATION COMPLETE ==========`);
+    console.error(`[DEBUG:init] Client: ${clientVersion?.name ?? "unknown"} v${clientVersion?.version ?? "unknown"}`);
+    console.error(`[DEBUG:init] Parsed capabilities (may be stripped): ${JSON.stringify(caps, null, 2)}`);
+
+    // Check for UI extension specifically (may be stripped by SDK schema parsing)
+    const capsAny = caps as Record<string, unknown> | undefined;
+    const uiExt = capsAny?.extensions
+      ? (capsAny.extensions as Record<string, unknown>)[EXTENSION_ID]
+      : undefined;
+    console.error(`[DEBUG:init] UI extension (${EXTENSION_ID}): ${uiExt ? JSON.stringify(uiExt) : "NOT PRESENT (may be stripped by SDK)"}`);
+
+    // Check all extensions
+    if (capsAny?.extensions) {
+      console.error(`[DEBUG:init] All extensions: ${Object.keys(capsAny.extensions as object).join(", ")}`);
+    } else {
+      console.error(`[DEBUG:init] No extensions in parsed capabilities (check [DEBUG:rx] for raw data)`);
+    }
+    console.error(`[DEBUG:init] =============================================`);
+  };
 
   return server;
 }
