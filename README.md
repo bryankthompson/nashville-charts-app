@@ -4,6 +4,8 @@ An MCP App that renders interactive **Nashville Number System (NNS)** chord char
 
 NNS is the notation system used by professional session musicians in Nashville. Chords are written as scale degree numbers (1, 4, 5, 6-, etc.) instead of letter names, making charts instantly transposable to any key.
 
+![Demo: creating a Jingle Bells chart from a natural language prompt](https://raw.githubusercontent.com/bryankthompson/nashville-charts-app/main/docs/screenshots/demo-create-chart.gif)
+
 ## Install
 
 Add to your Claude Desktop config:
